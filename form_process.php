@@ -84,11 +84,12 @@ function email_form_submission($form) {
 	$form_email = ((array_key_exists('Email', $_REQUEST) && !empty($_REQUEST['Email'])) ? cleanup_email($_REQUEST['Email']) : '');
 
 	$to = $form['email']['to'];
+	$from = $form['email']['from'];
 	$subject = $form['subject'];
 	$message = get_email_body($subject, $form['heading'], $form['fields']);
 	$headers = get_email_headers($to, $form_email);	
 
-	$sent = @mail($to, $subject, $message, $headers);
+	$sent = @mail($from, $subject, $message, $headers, '-f' . $from);
 	
 	if(!$sent)
 		die(get_form_error_response('Falha no envio do email'));
@@ -100,8 +101,9 @@ function email_form_submission($form) {
 	echo get_form_response(true, $success_data);
 }
 
-function get_email_headers($to_email, $form_email) {
-	$headers = 'From: ' . $to_email . PHP_EOL;
+function get_email_headers($from_email, $form_email) {
+	$headers = 'From: ' . $from_email . PHP_EOL;
+	$headers .= 'Return-Path: ' . $from_email . PHP_EOL;
 	$headers .= 'Reply-To: ' . $form_email . PHP_EOL;
 	$headers .= 'X-Mailer: Adobe Muse CC 2014.1.375 with PHP' . PHP_EOL;
 	$headers .= 'Content-type: text/html; charset=utf-8' . PHP_EOL;
